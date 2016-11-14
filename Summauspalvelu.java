@@ -40,7 +40,11 @@ public class Summauspalvelu implements Runnable{
 	}
 	
 	public void run() {
-		// Jaa'a 		
+		// Kuunnellaan ServerSokettia ja hyv‰ksyt‰‰n Soketiksi ServerSokettiin yritett‰v‰ yhteys
+		// K‰ytet‰‰n esim while-looppia et niin kaua ku jokin o totta -> totuusarvo muuttuu ku saadaan nolla
+			//asetetaan luku muuttujaan readInt objectinputista
+			//K‰yt‰‰n arvolla m‰‰ritellyt metodit l‰pi
+			//jne...
 	}
 	
 	

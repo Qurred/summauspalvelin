@@ -1,4 +1,3 @@
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -7,20 +6,20 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-
-import org.omg.CORBA.DataOutputStream;
 
 public class Moottori{
 
-	public static final int KUUNNELTAVAPORTTI = 20050;
-	public static final int ODOTUSAIKA = 5000; //5s
-	public static ArrayList<Summauspalvelu> summauspalvelimet;
-	public static ServerSocket soketti;
-	public static Socket asiakas;
+	private static final int KUUNNELTAVAPORTTI = 20050;
+	private static final int ODOTUSAIKA = 5000; //5s
+	private static ArrayList<Thread> summauspalvelimet;
+	private static ServerSocket soketti;
+	private static Socket asiakas;
+	private static ObjectInputStream dvs;
+	private static ObjectOutputStream dus;
+	private static DatagramSocket dataSoketti;
+	private static boolean verbose = false;
 	
 	/**
 	 * Harjoitustyˆss‰ yhdistett‰v‰ portti on 3126, poista myˆhemm‰ss‰ vaiheessa
@@ -31,11 +30,20 @@ public class Moottori{
 					+ "Syˆt‰ parametrit muotoa:\n[Osoite] [Portti]");
 			System.exit(0);
 		}
-		System.out.println("K‰ynnistet‰‰n summauspalvelua..");
+		if(args.length > 2 && args[2].equals("verbose")){
+			verbose = true;
+		}
+		if(verbose){
+			System.out.println("K‰ynnistet‰‰n summauspalvelua..");
+		}
 		summauspalvelimet = new ArrayList<>();
+		
 		lahetaUDP(args[0], Integer.parseInt(args[1]), Integer.toString(KUUNNELTAVAPORTTI));
+		
 		valiaikainenNimi();
-		System.out.println("Sammutetaan sovellus");
+		if(verbose){
+			System.out.println("Sammutetaan sovellus");
+		}
 	}
 	/**
 	 * L‰hett‰‰ parametrina annettuun osoitteeseen paketin joka sis‰lt‰‰
@@ -44,50 +52,58 @@ public class Moottori{
 	 * @param viesti
 	 */
 	public static void lahetaUDP(String osoite, int kohdePortti, String viesti){
-		System.out.println("L‰hetet‰‰n UDP-paketti‰ osoitteeseen "+osoite+":"+kohdePortti + " viesti‰: \"" + viesti+"\"");
+		if(verbose){
+			System.out.println("L‰hetet‰‰n UDP-paketti‰ osoitteeseen "+osoite+":"+kohdePortti + " viesti‰: \"" + viesti+"\"");
+		}
 		try {
 			InetAddress kohdeOsoite = InetAddress.getByName(osoite);
-			DatagramSocket dataSoketti = new DatagramSocket();
+			dataSoketti = new DatagramSocket();
 			byte[] lahetettavaData = Integer.toString(KUUNNELTAVAPORTTI).getBytes();
 			DatagramPacket paketti = new DatagramPacket(lahetettavaData, lahetettavaData.length, kohdeOsoite, kohdePortti);
 			dataSoketti.send(paketti);
+			dataSoketti.close();
 		} catch (IOException e) {
 			System.err.println("UDP-paketin l‰hett‰minen ei onnistunut...");
 			e.printStackTrace();
 			System.exit(0);
 		}
-		System.out.println("Paketti l‰hetetty onnistuneesti");
-		
+		if(verbose){
+			System.out.println("Paketti l‰hetetty onnistuneesti");
+		}
 	}
 	
 	public static void valiaikainenNimi(){
 		try {
-			System.out.println("Luodaan serverisoketti kuuntelemaan porttia " + KUUNNELTAVAPORTTI);
+			if(verbose){
+				System.out.println("Luodaan serverisoketti kuuntelemaan porttia " + KUUNNELTAVAPORTTI);
+			}
 			soketti = new ServerSocket(KUUNNELTAVAPORTTI);
 			soketti.setSoTimeout(ODOTUSAIKA);
 			asiakas = soketti.accept();
-//			asiakas.setSoTimeout(ODOTUSAIKA);
-			System.out.println("Saatiin yhteys");
+			if(verbose){
+				System.out.println("Saatiin yhteys");
+			}
 			//Otetaan objektitietovirrat
-			ObjectInputStream dvs = new ObjectInputStream(asiakas.getInputStream());
-			ObjectOutputStream dus = new ObjectOutputStream(asiakas.getOutputStream());
+			dvs = new ObjectInputStream(asiakas.getInputStream());
+			dus = new ObjectOutputStream(asiakas.getOutputStream());
 			//System.out.println(dvs.readUTF());
 			int tarvittavaMaara = dvs.readInt();
-			System.out.println("Pyydettiin " + tarvittavaMaara+" summauspalvelua");
-			//Luodaan summauspalvelut ja annetaan niille parametreina portit
-			for(int i = 0; i < tarvittavaMaara; i++){
-				System.out.println("Luodaan summauspalvelin kuuntelemaan porttia " + (KUUNNELTAVAPORTTI + i + 1));
-				summauspalvelimet.add(new Summauspalvelu(KUUNNELTAVAPORTTI + i + 1));
+			if(verbose){
+				System.out.println("Pyydettiin " + tarvittavaMaara+" summauspalvelua");
 			}
+			sleep(1000);
+			lahetaPortit(tarvittavaMaara);
+			sleep(1000);
+			//Luodaan summauspalvelut ja annetaan niille parametreina portit
+			luoSummauspalvelut(tarvittavaMaara);
 			//Nyt kun threadit on luotu niin k‰ynnistet‰‰n ne
-			for (Summauspalvelu summauspalvelu : summauspalvelimet) {
+			for (Thread summauspalvelu : summauspalvelimet) {
 				summauspalvelu.run();
 			}
-			System.out.println("K‰ynnistetty summauspalvelimet");
-			
-			for(Summauspalvelu summauspalvelu : summauspalvelimet){
-				//TODO Summauspalveluiden odotus, pit‰isi lˆyty‰ THREADist‰
+			if(verbose){
+				System.out.println("K‰ynnistetty summauspalvelimet");
 			}
+			odotaSummauspalveluita();
 			
 		} catch(SocketTimeoutException e){
 			System.out.println("Socket timeout");
@@ -98,8 +114,56 @@ public class Moottori{
 			e.printStackTrace();
 		}
 	}
-	
-	public static void luoSummauspalvelut(){
+	/**
+	 * L‰hett‰‰ portit joita k‰ytet‰‰n
+	 * @param maara
+	 */
+	public static void lahetaPortit(int maara){
+		if(verbose){
+			System.out.println("L‰hetet‰‰n palvelimelle tiedot");
+		}
+		for(int i=1;i <= maara;i++){
+			try {
+				dus.writeInt(KUUNNELTAVAPORTTI+1);
+				dus.flush();
+				sleep(50); //Ei kai pakolline
+			} catch (IOException e) {
+				System.out.println("Portin l‰hett‰minen ep‰onnistui");
+				e.printStackTrace();
+			}
+		}
 		
+	}
+	
+	public static void luoSummauspalvelut(int maara){
+		if(verbose){
+			System.out.println("Aloitetaan luomaan summauspalvelimia...");
+		}
+		for(int i = 0; i < maara; i++){
+			if(verbose){
+				System.out.println("Luodaan summauspalvelin kuuntelemaan porttia " + (KUUNNELTAVAPORTTI + i + 1));
+			}
+			summauspalvelimet.add(new Thread(new Summauspalvelu(KUUNNELTAVAPORTTI + i + 1)));
+		}
+	}
+	
+	public static void odotaSummauspalveluita(){
+		for(Thread summauspalvelu : summauspalvelimet){
+			try {
+				summauspalvelu.join();
+			} catch (InterruptedException e) {
+				System.out.println("Ei voitu liitty‰ threadiin. Onko Thread pys‰htynyt jo?");
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public static void sleep(int i){
+		try {
+			Thread.sleep(i);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
