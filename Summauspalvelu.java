@@ -23,6 +23,7 @@ public class Summauspalvelu implements Runnable{
 	}
 	public synchronized int suurinSumma(int luku){
 		if (luku < suurin){
+			suurin = luku;
 			return luku;
 		}
 			else{
@@ -30,10 +31,12 @@ public class Summauspalvelu implements Runnable{
 		}
     }
 	public synchronized int lukujenMaara(){
-		return lukumaara +1;
+		lukumaara = lukumaara++;
+		return lukumaara;
 	}
 	public synchronized int lukujenSumma(int luku){
-		return summa + luku;
+		summa = summa + luku;
+		return summa;
 	}
 	
 	public void run() {
