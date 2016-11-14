@@ -25,5 +25,6 @@ public class Summauspalvelu implements Runnable{
 	}
 	
 	
+	
 
 }
