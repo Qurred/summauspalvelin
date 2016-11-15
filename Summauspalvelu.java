@@ -1,16 +1,19 @@
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Summauspalvelu implements Runnable{
 
-	private static final int MAKSIMIODOTUSAIKA = 5000; //5s
+	private static final int MAKSIMIODOTUSAIKA = 20000; //5s
 	private static int summa;
 	private static int lukumaara;
 	private static int suurin;
 	private ServerSocket ss;
 	private Socket asiakas;
+	private ObjectInputStream ois;
+	private ObjectOutputStream ous;
 	
 	public Summauspalvelu(int portti){
 		try {
@@ -47,7 +50,8 @@ public class Summauspalvelu implements Runnable{
 
 		try {
 			asiakas = ss.accept();
-			ObjectInputStream ois = new ObjectInputStream(asiakas.getInputStream());
+			this.ois = new ObjectInputStream(asiakas.getInputStream());
+			this.ous = new ObjectOutputStream(asiakas.getOutputStream());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
