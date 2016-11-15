@@ -13,6 +13,7 @@ public class Moottori{
 
 	private static final int KUUNNELTAVAPORTTI = 20050;
 	private static final int ODOTUSAIKA = 5000; //5s
+	private static final int VIRHEKOODI = -1;
 	private static ArrayList<Thread> summauspalvelimet;
 	private static ServerSocket soketti;
 	private static Socket asiakas;
@@ -109,6 +110,11 @@ public class Moottori{
 			if(verbose)System.out.println("Saatiin yhteys");
 		}catch(SocketTimeoutException e){ //Soketti timeout
 			try {
+				if(verbose)System.out.println("Moottorin soketti timeout");
+				dus.writeInt(VIRHEKOODI);
+				dus.flush();
+				dvs.close();
+				dus.close();
 				soketti.close(); //Suljetaan soketti
 			} catch (IOException e1) {
 				e1.printStackTrace();
