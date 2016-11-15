@@ -1,5 +1,8 @@
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 public class Summauspalvelu implements Runnable{
 
@@ -8,11 +11,13 @@ public class Summauspalvelu implements Runnable{
 	private static int lukumaara;
 	private static int suurin;
 	private ServerSocket ss;
+	private Socket asiakas;
 	
 	public Summauspalvelu(int portti){
 		try {
 			this.ss = new ServerSocket(portti);
 			this.ss.setSoTimeout(MAKSIMIODOTUSAIKA);
+			this.asiakas = new Socket();
 			summa = 0;
 			lukumaara = 0;
 			suurin = 0;
@@ -24,10 +29,10 @@ public class Summauspalvelu implements Runnable{
 	public synchronized int suurinSumma(int luku){
 		if (luku < suurin){
 			suurin = luku;
-			return luku;
+			 return luku;
 		}
 			else{
-				return suurin;
+			 return suurin;
 		}
     }
 	public synchronized int lukujenMaara(){
@@ -40,6 +45,12 @@ public class Summauspalvelu implements Runnable{
 	}
 	
 	public void run() {
+		try {
+			asiakas = ss.accept();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// Kuunnellaan ServerSokettia ja hyväksytään Soketiksi ServerSokettiin yritettävä yhteys
 		// Käytetään esim while-looppia et niin kaua ku jokin o totta -> totuusarvo muuttuu ku saadaan nolla
 			//asetetaan luku muuttujaan readInt objectinputista
