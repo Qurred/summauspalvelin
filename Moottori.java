@@ -111,10 +111,10 @@ public class Moottori{
 		}catch(SocketTimeoutException e){ //Soketti timeout
 			try {
 				if(verbose)System.out.println("Moottorin soketti timeout");
-				dus.writeInt(VIRHEKOODI);
+				/*dus.writeInt(VIRHEKOODI);
 				dus.flush();
 				dvs.close();
-				dus.close();
+				dus.close();*/
 				soketti.close(); //Suljetaan soketti
 			} catch (IOException e1) {
 				e1.printStackTrace();
