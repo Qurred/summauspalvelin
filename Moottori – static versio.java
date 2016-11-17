@@ -15,35 +15,28 @@ public class Moottori{
 	private static final int KUUNNELTAVAPORTTI = 20050;
 	private static final int ODOTUSAIKA = 5000; //5s
 	private static final int VIRHEKOODI = -1;
-	private  ArrayList<Thread> summauspalvelimet;
-	private  ServerSocket soketti;
-	private  Socket asiakas;
-	private  ObjectInputStream dvs;
-	private  ObjectOutputStream dus;
-	private  DatagramSocket dataSoketti;
-	private  boolean verbose = false;
-	private  Data data;
+	private static ArrayList<Thread> summauspalvelimet;
+	private static ServerSocket soketti;
+	private static Socket asiakas;
+	private static ObjectInputStream dvs;
+	private static ObjectOutputStream dus;
+	private static DatagramSocket dataSoketti;
+	private static boolean verbose = false;
+	private static Data data;
 	
 	/**
 	 * Harjoitustyˆss‰ yhdistett‰v‰ portti on 3126, poista myˆhemm‰ss‰ vaiheessa
 	 */
 	public static void main(String[] args){
-		Moottori moottori;
 		if(args.length < 2){
 			System.err.println("Annettiin "+args.length+" parametria vaikka tarvitaan kaksi.\n"
 					+ "Syˆt‰ parametrit muotoa:\n[Osoite] [Portti]");
 			System.exit(0);
 		}
-		if(args.length > 2 && args[2].equals("verbose")){
-			moottori = new Moottori(args[0], args[1], Integer.toString(KUUNNELTAVAPORTTI), true);
-			//verbose = true; //Tarkistetaan oliko 3. parametri verbose
-		}else{
-			moottori = new Moottori(args[0], args[1], Integer.toString(KUUNNELTAVAPORTTI), true);
-		}
-		
-		//if(verbose)System.out.println("K‰ynnistet‰‰n summauspalvelua..");
+		if(args.length > 2 && args[2].equals("verbose"))verbose = true; //Tarkistetaan oliko 3. parametri verbose
+		if(verbose)System.out.println("K‰ynnistet‰‰n summauspalvelua..");
 		//Alustetaan ArrayList johon laitetaan threadit
-		/*summauspalvelimet = new ArrayList<>();
+		summauspalvelimet = new ArrayList<>();
 		
 		data = new Data();
 		
@@ -81,48 +74,6 @@ public class Moottori{
 			e.printStackTrace();
 		}
 		odota(5000);
-		if(verbose)System.out.println("Sammutetaan sovellus");*/
-	}
-	
-	public Moottori(String osoite, String kohdePortti, String viesti, boolean verbose){
-		this.verbose = true;
-		if(verbose)System.out.println("K‰ynnistet‰‰n summauspalvelua..");
-		//Alustetaan ArrayList johon laitetaan threadit
-		summauspalvelimet = new ArrayList<>();
-		
-		data = new Data();
-		lahetaUDP(osoite, Integer.parseInt(kohdePortti), Integer.toString(KUUNNELTAVAPORTTI));
-		//Yritet‰‰n muodostaa TCP-yhteys ja toistetaan 5 kertaa, jos yhteytt‰ ei ole viel‰k‰‰n muodostettu niin suljetaan sovellus
-		int yritykset = 0; //Pit‰‰ kirjaa kuinka monta yrityst‰ on tehty
-		while(yritykset < 5){
-			//Odota TCP yhteytt‰
-			if(muodostaTCP()){
-				break; //Yhteyden luonti onnistui ja t‰ten voidaan poistua while-loopista
-			}else{//Yhteyden muodostus ei onnistunut
-				yritykset++;
-				if(yritykset == 5){ //Jos yrityksi‰ on tehty jo viisi
-					if(verbose)System.out.println("TCP-yhteytt‰ ei saatu muodostettua 5 yrityksen j‰lkeen\nSuljetaan sovellus");
-					System.exit(0);//Sammutetaan sovellus
-				}
-				if(verbose)System.out.println("Yritet‰‰n uudelleen...");
-				lahetaUDP(osoite, Integer.parseInt(kohdePortti), Integer.toString(KUUNNELTAVAPORTTI));
-				}
-		}
-		
-		if(verbose)System.out.println("Otetaan selv‰‰ kuinka monta porttia halutaan");
-		int tarvittavaMaara = selvitaTarvittavatPortit();
-		if(verbose)System.out.println("Pyydettiin " + tarvittavaMaara+" summauspalvelua");
-		lahetaPortit(tarvittavaMaara);
-		luoSummauspalvelut(tarvittavaMaara);
-		try {
-			odotaPalvelinta();
-		} catch (SocketTimeoutException e) {
-			suljePalvelimet();
-			System.out.println("Viime utelusta minuutti\nSuljetaan palvelin");
-			odota(1000);
-			e.printStackTrace();
-		}
-		odota(5000);
 		if(verbose)System.out.println("Sammutetaan sovellus");
 	}
 	
@@ -132,7 +83,7 @@ public class Moottori{
 	 * @param kohdePortti
 	 * @param viesti
 	 */
-	public void lahetaUDP(String osoite, int kohdePortti, String viesti){
+	public static void lahetaUDP(String osoite, int kohdePortti, String viesti){
 		if(verbose){
 			System.out.println("L‰hetet‰‰n UDP-paketti‰ osoitteeseen "+osoite+":"+kohdePortti + " viesti‰: \"" + viesti+"\"");
 		}
@@ -159,7 +110,7 @@ public class Moottori{
 	 * Ottaa samalla talteen oliovirrat
 	 * @return
 	 */
-	public boolean muodostaTCP(){
+	public static boolean muodostaTCP(){
 		try{
 			if(verbose)System.out.println("Luodaan serverisoketti kuuntelemaan porttia " + KUUNNELTAVAPORTTI);
 			soketti = new ServerSocket(KUUNNELTAVAPORTTI);
@@ -195,7 +146,7 @@ public class Moottori{
 	 * Ottaa oliovirrasta int-tyyppisen arvon ja palauttaa sen
 	 * @return tarvittavien s‰ikeiden m‰‰r‰n
 	 */
-	public int selvitaTarvittavatPortit(){
+	public static int selvitaTarvittavatPortit(){
 		try {
 			return dvs.readInt(); //Luetaan oliovirrasta int-tyyppinen arvo
 		} catch (IOException e) {
@@ -207,7 +158,7 @@ public class Moottori{
 	/**
 	 * K‰ynnist‰‰ summauspalvelu-s‰ikeet
 	 */
-	public void kaynnista(){
+	public static void kaynnista(){
 		if(verbose) System.out.println("K‰ynnistet‰‰n summauspalvelimet...");
 		for (Thread summauspalvelu : summauspalvelimet) {
 			summauspalvelu.run();
@@ -219,7 +170,7 @@ public class Moottori{
 	 * L‰hett‰‰ portit joita k‰ytet‰‰n
 	 * @param maara
 	 */
-	public void lahetaPortit(int maara){
+	public static void lahetaPortit(int maara){
 		if(verbose)System.out.println("L‰hetet‰‰n palvelimelle tiedot");
 		for(int i=1;i <= maara;i++){
 			try {
@@ -234,15 +185,15 @@ public class Moottori{
 		
 	}
 	
-	public void luoSummauspalvelut(int maara){
+	public static void luoSummauspalvelut(int maara){
 		if(verbose)System.out.println("Aloitetaan luomaan summauspalvelimia...");
 		for(int i = 0; i < maara; i++){
 			if(verbose)System.out.println("Luodaan summauspalvelin kuuntelemaan porttia " + (KUUNNELTAVAPORTTI + i + 1));
-			summauspalvelimet.add(new Thread(new Summauspalvelu(KUUNNELTAVAPORTTI + i + 1, data)));
+			summauspalvelimet.add(new Thread(new Summauspalvelu(KUUNNELTAVAPORTTI + i + 1)));
 		}
 	}
 	
-	public void odotaSummauspalveluita(){
+	public static void odotaSummauspalveluita(){
 		for(Thread summauspalvelu : summauspalvelimet){
 			try {
 				summauspalvelu.join();
@@ -253,7 +204,7 @@ public class Moottori{
 		}
 	}
 	
-	public void odotaPalvelinta() throws SocketTimeoutException{
+	public static void odotaPalvelinta() throws SocketTimeoutException{
 		try {
 			asiakas.setSoTimeout(60000);
 		} catch (SocketException e1) {
@@ -290,7 +241,7 @@ public class Moottori{
 		}
 	}
 	
-	public void suljePalvelimet(){
+	public static void suljePalvelimet(){
 		for (Thread sae : summauspalvelimet) {
 			sae.interrupt();
 		}
@@ -300,7 +251,7 @@ public class Moottori{
 	 * Metodi, jonka avulla voidaan antaa sovelluksen lev‰t‰ hetki
 	 * @param i
 	 */
-	public void odota(int i){
+	public static void odota(int i){
 		try {
 			Thread.sleep(i);
 		} catch (InterruptedException e) {
