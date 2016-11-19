@@ -20,7 +20,7 @@ public class Summauspalvelu implements Runnable{
 	private InputStream iS;
 	boolean kaynnissa;
 	ArrayList<Integer> lista;
-	
+
 	public Summauspalvelu(int portti){
 		try {
 			this.ss = new ServerSocket(portti);
@@ -33,69 +33,69 @@ public class Summauspalvelu implements Runnable{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 	public synchronized int suurinSumma(ArrayList<Integer> suurin){
 		for (int i = 0; i < suurin.size(); i++){
-		if (suurin.get(i) > luku){
-			luku = suurin.get(i);
+			if (suurin.get(i) > luku){
+				luku = suurin.get(i);
+			}
 		}
-    }
 		return luku;
 	}
-	
+
 	public synchronized int lukujenMaara(ArrayList<Integer> maara){
 		return maara.size();
 	}
 	public synchronized int lukujenSumma(ArrayList<Integer> summat){
 		for (int i = 0; i < summat.size(); i++){
-		summa = summa + summat.get(i);
-	}
+			summa = summa + summat.get(i);
+		}
 		return summa;
 	}
 
 	public void run() {
-		
+
 		try {
 			asiakas = ss.accept();
 			iS = asiakas.getInputStream();
-	        oS = asiakas.getOutputStream();
-	        ous = new ObjectOutputStream(oS);
-	        ois = new ObjectInputStream(iS);
+			oS = asiakas.getOutputStream();
+			ous = new ObjectOutputStream(oS);
+			ois = new ObjectInputStream(iS);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	while (kaynnissa){
-	
-		try {
-			int luku = ois.readInt();
-			if (luku == 0){
-				kaynnissa = false;
-				break;
-			}
-			lista.add(luku);
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
-			asiakas.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		while (kaynnissa){
 
-		// Kuunnellaan ServerSokettia ja hyv‰ksyt‰‰n Soketiksi ServerSokettiin yritett‰v‰ yhteys
-		// K‰ytet‰‰n esim while-looppia et niin kaua ku jokin o totta -> totuusarvo muuttuu ku saadaan nolla
+			try {
+				int luku = ois.readInt(); //<- aiheuttaa virheen, l‰hde on tuntematon. Ehkei Vastapuoli kerke‰ tekem‰‰n mit‰‰n?
+				if (luku == 0){
+					kaynnissa = false;
+					break;
+				}
+				lista.add(luku);
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				asiakas.close(); //<- Miksi asiakas-soketti suljetaan whileloopin sis‰ll‰? Eikˆ t‰m‰ aiheuta kaikkien muiden yhteyksien menetyksen?
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			// Kuunnellaan ServerSokettia ja hyv‰ksyt‰‰n Soketiksi ServerSokettiin yritett‰v‰ yhteys
+			// K‰ytet‰‰n esim while-looppia et niin kaua ku jokin o totta -> totuusarvo muuttuu ku saadaan nolla
 			//asetetaan luku muuttujaan readInt objectinputista
 			//K‰yt‰‰n arvolla m‰‰ritellyt metodit l‰pi
 			//jne...
-	
-   }
-		
-		
+
+		}
+
+
 	}
-	
-	}
+
+}
