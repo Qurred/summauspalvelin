@@ -1,39 +1,49 @@
 
 public class Data{
 	
-	private int summa;
-	private int suurinSae;
-	private int suurinSumma;
-	private int lukumaara;
+	private int pieninPortti = 0;
+	private int lukumaara = 0;
+	private int[] tiedot;
 	
-	public Data(){
-		this.summa = 0;
-		this.suurinSumma = 0;
-		this.suurinSae = 0;
+	public Data(int tarvittavaMaara, int portti){
 		this.lukumaara = 0;
-	}
-	
-	public int annaSumma(){
-		return this.summa;
-	}
-	public int annaLukuMaara(){
-		return this.lukumaara;
-	}
-	public int annaSuurinSae(){
-		return this.suurinSae;
-	}
-	
-	public void lisaaSumma(int maara){
-		this.summa+=maara;
-	}
-	public void korotaMaaraa(){
-		this.lukumaara++;
-	}
-	public void tarkistaSuurin(int summa, int saeNumero){
-		if(summa > suurinSumma){
-			this.suurinSumma=summa;
-			this.suurinSae = saeNumero;
+		this.tiedot = new int[tarvittavaMaara];
+		this.pieninPortti = portti;
+		for(int i = 0; i < tiedot.length; i++){
+			this.tiedot[i] = 0;
 		}
 	}
 	
+	synchronized public void lisaaLuku(int luku, int portti){
+		System.out.println(portti +": lisätään luku... " + luku);
+		try{
+			tiedot[portti-pieninPortti-1]+=luku;
+			this.lukumaara++;
+			System.out.println(portti +": summa " +tiedot[portti-pieninPortti-1]);
+		}catch(IndexOutOfBoundsException e){
+			System.out.println("VIRHE: Annettua porttia ei löydy!");
+			e.printStackTrace();
+		}
+	}
+	
+	public int annaLukumaara(){
+		return this.lukumaara;
+	}
+	public int annaSuurinSummausPalvelin(){
+		int suurin = 0;
+		for(int i = 1; i < tiedot.length;i++){
+			if(tiedot[suurin]<tiedot[i]){
+				suurin = i;
+			}
+		}
+		return suurin+1;
+	}
+	
+	public int annaSumma(){
+		int summa = 0;
+		for(int i = 0; i < tiedot.length;i++){
+			summa += tiedot[i];
+		}
+		return summa;
+	}
 }
