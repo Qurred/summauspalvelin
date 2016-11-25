@@ -6,7 +6,6 @@ public class Data{
 	private int[] tiedot;
 	
 	public Data(int tarvittavaMaara, int portti){
-		this.lukumaara = 0;
 		this.tiedot = new int[tarvittavaMaara];
 		this.pieninPortti = portti;
 		for(int i = 0; i < tiedot.length; i++){
@@ -15,11 +14,10 @@ public class Data{
 	}
 	
 	synchronized public void lisaaLuku(int luku, int portti){
-		System.out.println(portti +": lisätään luku... " + luku);
+		//System.out.println(portti +": lisätään luku... " + luku);
 		try{
 			tiedot[portti-pieninPortti-1]+=luku;
 			this.lukumaara++;
-			System.out.println(portti +": summa " +tiedot[portti-pieninPortti-1]);
 		}catch(IndexOutOfBoundsException e){
 			System.out.println("VIRHE: Annettua porttia ei löydy!");
 			e.printStackTrace();
@@ -45,5 +43,12 @@ public class Data{
 			summa += tiedot[i];
 		}
 		return summa;
+	}
+	
+	public void tulostaTiedot(){
+		System.out.println("TULOSTETAAN DATA");
+		for(int i = 0; i < tiedot.length; i++){
+			System.out.println((pieninPortti+1+i) + ": " + tiedot[i]);
+		}
 	}
 }
