@@ -10,21 +10,24 @@ import java.net.SocketTimeoutException;
 
 public class Moottori{
 
+	//-- Muuttujien esittelu
+	//-- final intit
 	private static final int KUUNNELTAVAPORTTI = 2000;
 	private static final int ODOTUSAIKA = 5000; //5s
 	private static final int VIRHEKOODI = -1;
-	private  Summauspalvelu[] summauspalvelimet;
+	
+	//-- Yhteysmuuttujat
 	private  ServerSocket soketti;
 	private  Socket asiakas;
 	private  ObjectInputStream dvs;
 	private  ObjectOutputStream dus;
 	private  DatagramSocket dataSoketti;
+	
+	//-- Dataa
 	private  boolean verbose;
 	private  Data data;
+	private  Summauspalvelu[] summauspalvelimet;
 
-	/**
-	 * Harjoitustyössä yhdistettävä portti on 3126, poista myöhemmässä vaiheessa
-	 */
 	public static void main(String[] args){
 		Moottori moottori;
 		if(args.length < 2){
@@ -48,14 +51,13 @@ public class Moottori{
 		//Yritetään muodostaa TCP-yhteys ja toistetaan 5 kertaa, jos yhteyttä ei ole vieläkään muodostettu niin suljetaan sovellus
 		int yritykset = 0; //Pitää kirjaa kuinka monta yritystä on tehty
 		while(yritykset < 5){
-			//Odota TCP yhteyttä
 			if(muodostaTCP()){
 				break; //Yhteyden luonti onnistui ja täten voidaan poistua while-loopista
 			}else{//Yhteyden muodostus ei onnistunut
 				yritykset++;
 				if(yritykset == 5){ //Jos yrityksiä on tehty jo viisi
 					if(verbose)System.out.println("TCP-yhteyttä ei saatu muodostettua 5 yrityksen jälkeen\nSuljetaan sovellus");
-					System.exit(1000);//Sammutetaan sovellus
+					System.exit(1000);//Sammutetaan sovellus 1 sekunnin päästä
 				}
 				if(verbose)System.out.println("Yritetään uudelleen...");
 				lahetaUDP(osoite, Integer.parseInt(kohdePortti), Integer.toString(KUUNNELTAVAPORTTI));
@@ -64,24 +66,25 @@ public class Moottori{
 
 		if(verbose)System.out.println("Otetaan selvää kuinka monta porttia halutaan");
 
+		//-- Selvitetään Y:ltä montako summauspalvelinta tarvitaan
 		int tarvittavaMaara = selvitaTarvittavatPortit();
+		
+		//-- muuttujien alustamista
 		summauspalvelimet = new Summauspalvelu[tarvittavaMaara];
-
 		data = new Data(tarvittavaMaara, KUUNNELTAVAPORTTI);
 
 		if(verbose)System.out.println("Pyydettiin " + tarvittavaMaara+" summauspalvelua");
-		lahetaPortit(tarvittavaMaara);
+		
+		//-- Luodaan summauspalvelimet ja lähetetään Y:lle niiden portit
+		lahetaJaKaunnistaPalvelimet(tarvittavaMaara);
 
 		try {
 			odotaPalvelinta();
 		} catch (SocketTimeoutException e) {
-			//suljePalvelimet();
-			if(verbose)System.out.println("Viime utelusta minuutti\nSuljetaan palvelin");
-			//			odota(1000);
-			//			e.printStackTrace();
+			if(verbose)System.out.println("Viime utelusta minuutti\nSuljetaan palvelin ja sen osat");
 		}
 		suljePalvelimet();
-		if(verbose)data.tulostaTiedot();
+		//if(verbose)data.tulostaTiedot(); //Tulostaa Data-olion tiedot
 		if(verbose)System.out.println("Sammutetaan sovellus");
 	}
 
@@ -165,7 +168,7 @@ public class Moottori{
 	 * Lähettää portit joita käytetään
 	 * @param maara
 	 */
-	private void lahetaPortit(int maara){
+	private void lahetaJaKaunnistaPalvelimet(int maara){
 		if(verbose)System.out.println("Lähetetään palvelimelle tiedot");
 		for(int i=1;i <= maara;i++){
 			try {
