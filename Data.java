@@ -12,7 +12,14 @@ public class Data{
 			this.tiedot[i] = 0;
 		}
 	}
-	
+	/**Lis‰‰ saadut luvut kokonaislukutaulukkoon tiedot niin ett‰ 
+	 * taulukon indeksi osoittaa palvelussa ollutta porttia.
+	 * Ottaa kiinni IndexOutOfBounds-poikkeuksen ja tulostaa 
+	 * ilmoituksen virheest‰.
+	 * 
+	 * @param luku
+	 * @param portti
+	 */
 	synchronized public void lisaaLuku(int luku, int portti){
 		//System.out.println(portti +": lis‰t‰‰n luku... " + luku);
 		try{
@@ -24,9 +31,17 @@ public class Data{
 		}
 	}
 	
+/**
+ * @return v‰litettyjen kokonaislukujen lukum‰‰r‰
+ */
 	public int annaLukumaara(){
 		return this.lukumaara;
 	}
+	
+/** Selvitt‰‰ mille summauspalvelimelle v‰litettyjen kokonaislukujen
+ *  summa on suurin
+ *  @return indeksipaikkaa vastaava luku + 1
+ */
 	public int annaSuurinSummausPalvelin(){
 		int suurin = 0;
 		for(int i = 1; i < tiedot.length;i++){
@@ -35,8 +50,10 @@ public class Data{
 			}
 		}
 		return suurin+1;
-	}
-	
+	}	
+/** 
+ * @return v‰litettyjen kokonaislukujen summa
+ */
 	public int annaSumma(){
 		int summa = 0;
 		for(int i = 0; i < tiedot.length;i++){
