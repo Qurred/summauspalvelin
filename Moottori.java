@@ -183,6 +183,13 @@ public class Moottori{
 		}
 
 	}
+	/**
+	 * Ottaa oliovirrasta int-tyyppisen arvon. Mikäli arvo on 0, sulkee. Jos arvo on 1,
+	 * kutsuu data-luokan metodia annaSumma ja tulostaa kyselyn tuloksen. Jos arvo on 2,
+	 * kutsuu data-luokan metodia annaSuurinSummausPalvelin ja tulostaa kyselyn tuloksen.
+	 * Jos arvo on 3, kutsuu annaLukumaara ja tulostaa kyselyn tuloksen.
+	 * @throws SocketTimeoutException
+	 */
 
 	private void odotaPalvelinta() throws SocketTimeoutException{
 		try {
@@ -218,6 +225,9 @@ public class Moottori{
 			return;
 		}
 	}
+	/**
+	 * Sulkee summauspalvelimet
+	 */
 
 	private void suljePalvelimet(){
 		for (int i = 0; i < summauspalvelimet.length; i++) {
